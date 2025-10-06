@@ -696,8 +696,6 @@ class ReportGenerator:
 # Main Streamlit Application
 def main():
     # Header
-   def main():
-    # Header
     st.markdown("""
         <h1 style='text-align: center; color: #1e293b; font-size: 3rem; margin-bottom: 0;'>🔍 Dhruv OCR</h1>
         <p style='text-align: center; color: #64748b; font-size: 1.2rem; margin-top: 0;'>Professional Document Verification System</p>
