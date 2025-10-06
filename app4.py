@@ -754,17 +754,30 @@ def main():
         with col1:
             st.markdown("#### 👤 User Document")
             user_file = st.file_uploader("Upload User Document", type=['png', 'jpg', 'jpeg', 'webp'], key="user")
-            if user_file:
-                user_image = Image.open(user_file)
-                st.image(user_image, caption="User Document", use_container_width=True)
+            user_image = None
+            if user_file is not None:
+                try:
+                    user_image = Image.open(user_file).convert("RGB")
+                    user_image.load()
+                    st.image(user_image, caption="User Document", use_container_width=True)
+                except Exception as e:
+                    st.error(f"Failed to load User Document image: {e}")
+
         
         with col2:
-            st.markdown("#### 🏢 Vendor Document")
-            vendor_file = st.file_uploader("Upload Vendor Document", type=['png', 'jpg', 'jpeg', 'webp'], key="vendor")
-            if vendor_file:
-                vendor_image = Image.open(vendor_file)
+           st.markdown("#### 🏢 Vendor Document")
+           vendor_file = st.file_uploader("Upload Vendor Document", type=['png', 'jpg', 'jpeg', 'webp'], key="vendor")
+           vendor_image = None
+           if vendor_file is not None:
+            try:
+                vendor_image = Image.open(vendor_file).convert("RGB")
+                vendor_image.load()
                 st.image(vendor_image, caption="Vendor Document", use_container_width=True)
-        
+            except Exception as e:
+                st.error(f"Failed to load Vendor Document image: {e}")
+        # Later, check before processing:
+        if user_image is None or vendor_image is None:
+            st.warning("⚠️ Please upload both valid User and Vendor images to start verification.")
         st.markdown("---")
         
         if st.button("🚀 Start Verification", type="primary", use_container_width=True):
