@@ -775,17 +775,19 @@ def main():
             st.markdown("#### 👤 User Document")
             user_file = st.file_uploader("Upload User Document", type=['png', 'jpg', 'jpeg', 'webp'], key="user")
             if user_file:
-                user_image = Image.open(user_file)
+                user_image = Image.open(user_file).convert("RGB")  # <-- ensure RGB
                 display_img = resize_image_for_display(user_image)
                 st.image(display_img, caption="User Document", use_container_width=True)
+                user_img_array = np.array(user_image) 
         
         with col2:
             st.markdown("#### 🏢 Vendor Document")
             vendor_file = st.file_uploader("Upload Vendor Document", type=['png', 'jpg', 'jpeg', 'webp'], key="vendor")
             if vendor_file:
-                vendor_image = Image.open(vendor_file)
+                vendor_image = vendor_image.convert("RGB")
                 display_img = resize_image_for_display(vendor_image)
                 st.image(display_img, caption="Vendor Document", use_container_width=True)
+                vendor_img_array = np.array(vendor_image)
         
         st.markdown("---")
         
