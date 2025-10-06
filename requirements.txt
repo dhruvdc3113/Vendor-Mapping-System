@@ -4,6 +4,6 @@ opencv-python-headless==4.10.0.84
 numpy==1.26.4
 pandas==2.2.3
 rapidfuzz==3.6.1
-torch==2.8.0+cpu
-torchvision==0.15.2+cpu
+torch==2.8.0
+torchvision==0.15.2
 
