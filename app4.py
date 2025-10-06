@@ -777,7 +777,7 @@ def main():
             if user_file:
                 user_image = Image.open(user_file).convert("RGB")  # <-- ensure RGB
                 display_img = resize_image_for_display(user_image)
-                st.image(display_img, caption="User Document", use_container_width=True)
+                st.image(display_img, caption="User Document", use_column_width=True)
                 user_img_array = np.array(user_image) 
         
         with col2:
@@ -786,7 +786,7 @@ def main():
             if vendor_file:
                 vendor_image = vendor_image.convert("RGB")
                 display_img = resize_image_for_display(vendor_image)
-                st.image(display_img, caption="Vendor Document", use_container_width=True)
+                st.image(display_img, caption="Vendor Document", use_column_width=True)
                 vendor_img_array = np.array(vendor_image)
         
         st.markdown("---")
