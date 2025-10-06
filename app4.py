@@ -759,7 +759,7 @@ def main():
                 try:
                     user_image = Image.open(user_file).convert("RGB")
                     user_image.load()
-                    st.image(user_image, caption="User Document", use_container_width=True)
+                    st.image(user_image, caption="User Document", use_column_width=True)
                 except Exception as e:
                     st.error(f"Failed to load User Document image: {e}")
 
@@ -772,7 +772,7 @@ def main():
             try:
                 vendor_image = Image.open(vendor_file).convert("RGB")
                 vendor_image.load()
-                st.image(vendor_image, caption="Vendor Document", use_container_width=True)
+                st.image(vendor_image, caption="Vendor Document", use_column_width=True)
             except Exception as e:
                 st.error(f"Failed to load Vendor Document image: {e}")
         # Later, check before processing:
