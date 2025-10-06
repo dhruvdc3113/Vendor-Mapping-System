@@ -696,190 +696,94 @@ class ReportGenerator:
 # Main Streamlit Application
 def main():
     # Header
+   def main():
+    # Header
     st.markdown("""
-        <h1 style='text-align: center; color: #1e293b; font-size: 3rem; margin-bottom: 0;'>
-            🔍 Dhruv OCR
-        </h1>
-        <p style='text-align: center; color: #64748b; font-size: 1.2rem; margin-top: 0;'>
-            Professional Document Verification System
-        </p>
+        <h1 style='text-align: center; color: #1e293b; font-size: 3rem; margin-bottom: 0;'>🔍 Dhruv OCR</h1>
+        <p style='text-align: center; color: #64748b; font-size: 1.2rem; margin-top: 0;'>Professional Document Verification System</p>
         <hr style='margin: 20px 0; border: 1px solid #e2e8f0;'>
     """, unsafe_allow_html=True)
-    
+
     # Sidebar
     with st.sidebar:
         st.markdown("### ⚙️ Configuration")
-        st.markdown("---")
-        
-        st.info("*Dhruv OCR* uses advanced OCR and AI to verify identity documents with high accuracy.")
-        
-        st.markdown("### 📋 Supported Documents")
-        st.markdown("""
-        - ✅ Aadhaar Card
-        - ✅ PAN Card
-        - ✅ Passport
-        - ✅ Driving License
-        - ✅ Voter ID
-        """)
-        
-        st.markdown("---")
-        st.markdown("### 🎯 Features")
-        st.markdown("""
-        - Multi-strategy name extraction
-        - Fuzzy field matching
-        - Automatic document type detection
-        - PDF report generation
-        - Real-time processing
-        """)
-        
-        st.markdown("---")
-        st.markdown("### 📊 Match Thresholds")
-        match_threshold = st.slider("Match Threshold (%)", 70, 100, Config.FUZZY_MATCH_THRESHOLD_MATCH)
-        partial_threshold = st.slider("Partial Match Threshold (%)", 50, 80, Config.FUZZY_MATCH_THRESHOLD_PARTIAL)
-        
-        Config.FUZZY_MATCH_THRESHOLD_MATCH = match_threshold
-        Config.FUZZY_MATCH_THRESHOLD_PARTIAL = partial_threshold
-        
-        st.markdown("---")
-        st.markdown("<p style='text-align: center; color: #64748b; font-size: 0.8rem;'>© 2025 Dhruv OCR | v1.0</p>", unsafe_allow_html=True)
-    
-    # Main content tabs
+        st.slider("Match Threshold (%)", 70, 100, Config.FUZZY_MATCH_THRESHOLD_MATCH, key="match_threshold")
+        st.slider("Partial Match Threshold (%)", 50, 80, Config.FUZZY_MATCH_THRESHOLD_PARTIAL, key="partial_threshold")
+        Config.FUZZY_MATCH_THRESHOLD_MATCH = st.session_state.match_threshold
+        Config.FUZZY_MATCH_THRESHOLD_PARTIAL = st.session_state.partial_threshold
+
+    # Tabs
     tab1, tab2, tab3 = st.tabs(["📄 Document Verification", "📊 Batch Processing", "ℹ️ About"])
-    
+
     with tab1:
         st.markdown("### Upload Documents for Verification")
-        
         col1, col2 = st.columns(2)
-        
+
         with col1:
             st.markdown("#### 👤 User Document")
             user_file = st.file_uploader("Upload User Document", type=['png', 'jpg', 'jpeg', 'webp'], key="user")
-            user_image = None
-            if user_file is not None:
-                try:
-                    user_image = Image.open(user_file).convert("RGB")
-                    user_image.load()
-                    st.image(user_image, caption="User Document", use_column_width=True)
-                except Exception as e:
-                    st.error(f"Failed to load User Document image: {e}")
+            user_image = Image.open(user_file).convert("RGB") if user_file else None
+            if user_image: st.image(user_image, caption="User Document", use_column_width=True)
 
-        
         with col2:
-           st.markdown("#### 🏢 Vendor Document")
-           vendor_file = st.file_uploader("Upload Vendor Document", type=['png', 'jpg', 'jpeg', 'webp'], key="vendor")
-           vendor_image = None
-           if vendor_file is not None:
-            try:
-                vendor_image = Image.open(vendor_file).convert("RGB")
-                vendor_image.load()
-                st.image(vendor_image, caption="Vendor Document", use_column_width=True)
-            except Exception as e:
-                st.error(f"Failed to load Vendor Document image: {e}")
-        # Later, check before processing:
-        if user_image is None or vendor_image is None:
-            st.warning("⚠️ Please upload both valid User and Vendor images to start verification.")
-        st.markdown("---")
-        
-        if st.button("🚀 Start Verification", type="primary", use_container_width=True):
-            if user_file and vendor_file:
-                with st.spinner("🔄 Processing documents... This may take a moment."):
-                    # Process user document
-                    user_img_array = np.array(user_image)
-                    user_report = DocumentProcessor.process_document(user_img_array)
-                    
-                    # Process vendor document
-                    vendor_img_array = np.array(vendor_image)
-                    vendor_report = DocumentProcessor.process_document(vendor_img_array)
-                    
-                    # Compare documents
+            st.markdown("#### 🏢 Vendor Document")
+            vendor_file = st.file_uploader("Upload Vendor Document", type=['png', 'jpg', 'jpeg', 'webp'], key="vendor")
+            vendor_image = Image.open(vendor_file).convert("RGB") if vendor_file else None
+            if vendor_image: st.image(vendor_image, caption="Vendor Document", use_column_width=True)
+
+        if st.button("🚀 Start Verification"):
+            if not user_image or not vendor_image:
+                st.warning("⚠️ Please upload both User and Vendor documents to start verification.")
+            else:
+                with st.spinner("🔄 Processing documents..."):
+                    user_report = DocumentProcessor.process_document(np.array(user_image))
+                    vendor_report = DocumentProcessor.process_document(np.array(vendor_image))
                     comparison_df = ComparisonEngine.compare(user_report, vendor_report)
                     summary = ComparisonEngine.get_verification_summary(comparison_df)
-                    
-                    # Store in session state
-                    st.session_state['comparison_df'] = comparison_df
-                    st.session_state['summary'] = summary
-                    st.session_state['user_report'] = user_report
-                    st.session_state['vendor_report'] = vendor_report
-                
+
+                    st.session_state.update({
+                        'comparison_df': comparison_df,
+                        'summary': summary,
+                        'user_report': user_report,
+                        'vendor_report': vendor_report
+                    })
+
                 st.success("✅ Verification completed successfully!")
                 
-                # Display results
-                st.markdown("---")
-                st.markdown("### 📊 Verification Results")
-                
-                # Status badge
-                status = summary['verification_status']
-                if status == "PASSED":
-                    st.markdown(f"<div style='text-align: center;'><span class='success-badge'>✓ VERIFICATION {status}</span></div>", unsafe_allow_html=True)
-                else:
-                    st.markdown(f"<div style='text-align: center;'><span class='failed-badge'>✗ VERIFICATION {status}</span></div>", unsafe_allow_html=True)
-                
-                st.markdown("<br>", unsafe_allow_html=True)
-                
-                # Metrics
+                # Display metrics
                 col1, col2, col3, col4 = st.columns(4)
-                
-                with col1:
-                    st.metric("Total Fields", summary['total_fields'])
-                with col2:
-                    st.metric("Matches", summary['matches'], delta=f"+{summary['matches']}")
-                with col3:
-                    st.metric("Match Rate", f"{summary['match_rate']}%")
-                with col4:
-                    st.metric("Avg Similarity", f"{summary['average_similarity']}%")
-                
-                # Additional metrics
+                col1.metric("Total Fields", summary['total_fields'])
+                col2.metric("Matches", summary['matches'])
+                col3.metric("Match Rate", f"{summary['match_rate']}%")
+                col4.metric("Avg Similarity", f"{summary['average_similarity']}%")
+
                 col5, col6, col7 = st.columns(3)
-                with col5:
-                    st.metric("Partial Matches", summary['partial_matches'])
-                with col6:
-                    st.metric("Mismatches", summary['mismatches'], delta=f"-{summary['mismatches']}" if summary['mismatches'] > 0 else "0")
-                with col7:
-                    st.metric("Critical Fields", summary['critical_fields_matched'])
-                
-                st.markdown("---")
-                
-                # Detailed comparison table
-                st.markdown("### 📋 Detailed Field Comparison")
-                
-                # Style the dataframe
+                col5.metric("Partial Matches", summary['partial_matches'])
+                col6.metric("Mismatches", summary['mismatches'])
+                col7.metric("Critical Fields", summary['critical_fields_matched'])
+
+                # Display comparison table
                 def highlight_status(row):
-                    if row['Status'] == 'Match':
-                        return ['background-color: #d1fae5'] * len(row)
-                    elif row['Status'] == 'Partial Match':
-                        return ['background-color: #fef3c7'] * len(row)
-                    elif 'Missing' in row['Status']:
-                        return ['background-color: #fee2e2'] * len(row)
-                    else:
-                        return ['background-color: #fecaca'] * len(row)
-                
-                styled_df = comparison_df.style.apply(highlight_status, axis=1)
-                st.dataframe(styled_df, use_container_width=True, hide_index=True)
-                
-                # Extracted fields comparison
-                st.markdown("---")
+                    colors_map = {'Match':'#d1fae5','Partial Match':'#fef3c7','Mismatch':'#fecaca'}
+                    color = colors_map.get(row['Status'], '#fee2e2')
+                    return [f'background-color: {color}']*len(row)
+
+                st.dataframe(comparison_df.style.apply(highlight_status, axis=1), use_container_width=True)
+
+                # Display extracted fields
                 st.markdown("### 🔍 Extracted Fields Detail")
-                
                 col1, col2 = st.columns(2)
-                
                 with col1:
                     st.markdown("#### 👤 User Document Fields")
-                    user_display = {k: v for k, v in user_report.items() if not k.startswith('_')}
-                    for key, value in user_display.items():
-                        st.text(f"{key}: {value}")
-                
+                    for k,v in user_report.items(): 
+                        if not k.startswith('_'): st.text(f"{k}: {v}")
                 with col2:
                     st.markdown("#### 🏢 Vendor Document Fields")
-                    vendor_display = {k: v for k, v in vendor_report.items() if not k.startswith('_')}
-                    for key, value in vendor_display.items():
-                        st.text(f"{key}: {value}")
-                
-                # Download report
-                st.markdown("---")
-                st.markdown("### 📥 Download Report")
-                
+                    for k,v in vendor_report.items(): 
+                        if not k.startswith('_'): st.text(f"{k}: {v}")
+
+                # PDF Download
                 pdf_bytes = ReportGenerator.generate_comparison_report(user_report, vendor_report, comparison_df)
-                
                 st.download_button(
                     label="📄 Download PDF Report",
                     data=pdf_bytes,
@@ -887,26 +791,14 @@ def main():
                     mime="application/pdf",
                     use_container_width=True
                 )
-                
-            else:
-                st.error("⚠️ Please upload both User and Vendor documents to proceed.")
-    
+
     with tab2:
-        st.markdown("### 📊 Batch Processing")
-        st.info("🚧 Batch processing feature coming soon! Process multiple document pairs at once.")
-        
-        st.markdown("""
-        *Upcoming Features:*
-        - Process multiple document pairs simultaneously
-        - Export results to CSV/Excel
-        - Automated workflow integration
-        - API access for enterprise clients
-        """)
-    
+        st.info("🚧 Batch processing coming soon!")
+
     with tab3:
         st.markdown("### ℹ️ About Dhruv OCR")
-        
-        st.markdown("""
+        st.markdown("*Professional document verification system with OCR & fuzzy matching*")
+    ("""
         *Dhruv OCR* is a professional document verification system designed to accurately extract 
         and compare information from identity documents using advanced Optical Character Recognition (OCR) 
         and intelligent field matching algorithms.
