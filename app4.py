@@ -784,6 +784,7 @@ def main():
             st.markdown("#### 🏢 Vendor Document")
             vendor_file = st.file_uploader("Upload Vendor Document", type=['png', 'jpg', 'jpeg', 'webp'], key="vendor")
             if vendor_file:
+                vendor_image = Image.open(vendor_file)
                 vendor_image = vendor_image.convert("RGB")
                 display_img = resize_image_for_display(vendor_image)
                 st.image(display_img, caption="Vendor Document", use_column_width=True)
